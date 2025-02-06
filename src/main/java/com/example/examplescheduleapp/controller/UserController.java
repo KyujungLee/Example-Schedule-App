@@ -44,7 +44,7 @@ public class UserController {
             @PathVariable Long id,
             @RequestBody UserRequestDto dto
     ){
-        UserResponseDto updatedUser = userService.update(id, dto.getName(), dto.getEmail());
+        UserResponseDto updatedUser = userService.update(id, dto.getName());
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 

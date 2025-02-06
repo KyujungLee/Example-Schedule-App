@@ -17,9 +17,11 @@ public class User extends BaseEntity{
     @Column(length = 10)
     private String name;
 
-    @Setter
     @Column(length = 100, nullable = false, unique = true)
     private String email;
+
+    @Column(length = 20, nullable = false)
+    private String password;
 
 
     public User() {}
@@ -29,8 +31,7 @@ public class User extends BaseEntity{
         this.email = email;
     }
 
-    public void updateNameAndEmail(String name, String email){
+    public void updateName(String name){
         this.name = name;
-        this.email = email;
     }
 }

@@ -54,11 +54,11 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto update(Long id, String name, String email){
+    public UserResponseDto update(Long id, String name){
 
         User findByIdUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "아이디가 존재하지 않습니다"));
 
-        findByIdUser.updateNameAndEmail(name, email);
+        findByIdUser.updateName(name);
 
         User savedUser = userRepository.save(findByIdUser);
 

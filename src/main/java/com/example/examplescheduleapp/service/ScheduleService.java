@@ -18,9 +18,9 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
 
-    public ScheduleResponseDto save(String name, String email, String title, String contents) {
+    public ScheduleResponseDto save(String name, String title, String contents) {
 
-        Schedule schedule = new Schedule(name, email, title, contents);
+        Schedule schedule = new Schedule(name, title, contents);
 
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
@@ -60,11 +60,11 @@ public class ScheduleService {
 
 
     @Transactional
-    public ScheduleResponseDto update(Long id, String name, String email, String title, String contents) {
+    public ScheduleResponseDto update(Long id, String name, String title, String contents) {
 
         Schedule findByIdSchedule = scheduleRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아이디가 존재하지 않습니다"));
 
-        findByIdSchedule.updateNameAndEmailAndTitleAndContents(name, email, title, contents);
+        findByIdSchedule.updateNameAndTitleAndContents(name, title, contents);
 
         Schedule updatedSchedule = scheduleRepository.save(findByIdSchedule);
 
