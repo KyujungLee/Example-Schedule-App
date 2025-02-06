@@ -18,15 +18,16 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
 
-    public ScheduleResponseDto save(String username, String title, String contents) {
+    public ScheduleResponseDto save(String name, String email, String title, String contents) {
 
-        Schedule schedule = new Schedule(username, title, contents);
+        Schedule schedule = new Schedule(name, email, title, contents);
 
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         return new ScheduleResponseDto(
                 savedSchedule.getId(),
-                savedSchedule.getUsername(),
+                savedSchedule.getUser().getName(),
+                savedSchedule.getUser().getEmail(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContents(),
                 savedSchedule.getCreated_at(),
@@ -37,7 +38,7 @@ public class ScheduleService {
 
     public List<ScheduleResponseDto> findAll(){
 
-        return scheduleRepository.findAll().stream().map(ScheduleResponseDto::toDto).toList();
+        return scheduleRepository.findAll().stream().map(ScheduleResponseDto::toDtoSchedule).toList();
 
     }
 
@@ -47,7 +48,8 @@ public class ScheduleService {
 
         return new ScheduleResponseDto(
                 findByIdSchedule.getId(),
-                findByIdSchedule.getUsername(),
+                findByIdSchedule.getUser().getName(),
+                findByIdSchedule.getUser().getEmail(),
                 findByIdSchedule.getTitle(),
                 findByIdSchedule.getContents(),
                 findByIdSchedule.getCreated_at(),
@@ -58,17 +60,18 @@ public class ScheduleService {
 
 
     @Transactional
-    public ScheduleResponseDto update(Long id, String username, String title, String contents) {
+    public ScheduleResponseDto update(Long id, String name, String email, String title, String contents) {
 
         Schedule findByIdSchedule = scheduleRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아이디가 존재하지 않습니다"));
 
-        findByIdSchedule.updateUsernameAndTitleAndContents(username, title, contents);
+        findByIdSchedule.updateNameAndEmailAndTitleAndContents(name, email, title, contents);
 
         Schedule updatedSchedule = scheduleRepository.save(findByIdSchedule);
 
         return new ScheduleResponseDto(
                 updatedSchedule.getId(),
-                updatedSchedule.getUsername(),
+                updatedSchedule.getUser().getName(),
+                updatedSchedule.getUser().getEmail(),
                 updatedSchedule.getTitle(),
                 updatedSchedule.getContents(),
                 updatedSchedule.getCreated_at(),

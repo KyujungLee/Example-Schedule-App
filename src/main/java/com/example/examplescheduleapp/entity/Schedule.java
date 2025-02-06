@@ -12,8 +12,9 @@ public class Schedule extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 10, nullable = false)
-    private String username;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(length = 100, nullable = false)
     private String title;
@@ -21,16 +22,20 @@ public class Schedule extends BaseEntity{
     @Column(nullable = true)
     private String contents;
 
+
     public Schedule() {}
 
-    public Schedule(String username, String title, String contents) {
-        this.username = username;
+    public Schedule(String name, String email, String title, String contents) {
+        user.setName(name);
+        user.setEmail(email);
         this.title = title;
         this.contents = contents;
     }
 
-    public void updateUsernameAndTitleAndContents(String username, String title, String contents) {
-        this.username = username;
+
+    public void updateNameAndEmailAndTitleAndContents(String name, String email, String title, String contents) {
+        user.setName(name);
+        user.setEmail(email);
         this.title = title;
         this.contents = contents;
     }

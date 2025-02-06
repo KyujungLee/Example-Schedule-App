@@ -21,7 +21,7 @@ public class ScheduleController {
     public ResponseEntity<ScheduleResponseDto> save(
             @RequestBody ScheduleRequestDto dto
     ){
-        ScheduleResponseDto savedSchedule = scheduleService.save(dto.getUsername(), dto.getTitle(), dto.getContents());
+        ScheduleResponseDto savedSchedule = scheduleService.save(dto.getName(), dto.getEmail(), dto.getTitle(), dto.getContents());
         return new ResponseEntity<>(savedSchedule, HttpStatus.CREATED);
     }
 
@@ -44,7 +44,7 @@ public class ScheduleController {
             @PathVariable Long id,
             @RequestBody ScheduleRequestDto dto
     ){
-        ScheduleResponseDto updatedSchedule = scheduleService.update(id, dto.getUsername(), dto.getTitle(), dto.getContents());
+        ScheduleResponseDto updatedSchedule = scheduleService.update(id, dto.getName(), dto.getEmail(), dto.getTitle(), dto.getContents());
         return new ResponseEntity<>(updatedSchedule, HttpStatus.OK);
     }
 
