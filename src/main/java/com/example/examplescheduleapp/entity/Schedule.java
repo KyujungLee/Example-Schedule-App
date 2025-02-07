@@ -32,8 +32,7 @@ public class Schedule extends BaseEntity{
     }
 
 
-    public void updateNameAndTitleAndContents(String name, String title, String contents) {
-        user.setUsername(name);
+    public void updateTitleAndContents(String title, String contents) {
         this.title = title;
         this.contents = contents;
     }

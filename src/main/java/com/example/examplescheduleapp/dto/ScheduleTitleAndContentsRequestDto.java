@@ -3,14 +3,12 @@ package com.example.examplescheduleapp.dto;
 import lombok.Getter;
 
 @Getter
-public class ScheduleRequestDto {
+public class ScheduleTitleAndContentsRequestDto {
 
-    private final String nickname;
     private final String title;
     private final String contents;
 
-    public ScheduleRequestDto(String nickname, String title, String contents) {
-        this.nickname = nickname;
+    public ScheduleTitleAndContentsRequestDto(String title, String contents) {
         this.title = title;
         this.contents = contents;
     }

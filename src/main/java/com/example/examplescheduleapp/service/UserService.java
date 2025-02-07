@@ -1,9 +1,12 @@
 package com.example.examplescheduleapp.service;
 
-import com.example.examplescheduleapp.dto.UserResponseDto;
-import com.example.examplescheduleapp.dto.UserSignUpResponseDto;
+import com.example.examplescheduleapp.dto.UserInformationResponseDto;
+import com.example.examplescheduleapp.dto.UserNicknameResponseDto;
 import com.example.examplescheduleapp.entity.User;
+import com.example.examplescheduleapp.filter.Const;
 import com.example.examplescheduleapp.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -11,15 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserSignUpResponseDto signUp(String username, String nickname, String email, String password) {
+    public UserNicknameResponseDto signUp(String username, String nickname, String email, String password, HttpServletRequest request) {
 
         User user = new User(username, nickname, email, password);
 
@@ -31,39 +32,39 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 이메일 또는 닉네임입니다.");
         }
 
-        return new UserSignUpResponseDto(
+        HttpSession session = request.getSession(true);
+        session.invalidate();
+        session.setAttribute(Const.LOGIN_USER, savedUser.getNickname());
+
+        return new UserNicknameResponseDto(
                 savedUser.getNickname()
         );
-
     }
 
-    public UserSignUpResponseDto login(String email, String password) {
+    public UserNicknameResponseDto login(String email, String password, HttpServletRequest request) {
 
         User findByEmailUser = userRepository.findByEmail(email)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "이메일이 존재하지 않습니다."));
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "계정이 존재하지 않습니다."));
 
         if (!findByEmailUser.getPassword().equals(password)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
         }
 
-        return new UserSignUpResponseDto(
+        HttpSession session = request.getSession(true);
+        session.invalidate();
+        session.setAttribute(Const.LOGIN_USER, findByEmailUser.getNickname());
+
+        return new UserNicknameResponseDto(
                 findByEmailUser.getNickname()
         );
     }
 
-    public List<UserResponseDto> findAll() {
-
-        return userRepository.findAll().stream().map(UserResponseDto::toDtoUser).toList();
-
-    }
-
-    public UserResponseDto findByNickname(String nickname) {
+    public UserInformationResponseDto findByNickname(String nickname) {
 
         User findByNicknameUser = userRepository.findByNickname(nickname)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."));
 
-        return new UserResponseDto(
-                findByNicknameUser.getId(),
+        return new UserInformationResponseDto(
                 findByNicknameUser.getUsername(),
                 findByNicknameUser.getNickname(),
                 findByNicknameUser.getEmail(),
@@ -74,7 +75,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserSignUpResponseDto update(String originalNickname, String updateUsername, String updateNickname, String updateEmail, String updatePassword) {
+    public UserNicknameResponseDto update(String originalNickname, String updateUsername, String updateNickname, String updateEmail, String updatePassword, HttpServletRequest request) {
 
         User findByNicknameUser = userRepository.findByNickname(originalNickname)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."));
@@ -100,13 +101,16 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 이메일 또는 닉네임입니다.");
         }
 
-        return new UserSignUpResponseDto(
+        HttpSession session = request.getSession(false);
+        session.invalidate();
+        session.setAttribute(Const.LOGIN_USER, updatedUser.getNickname());
+
+        return new UserNicknameResponseDto(
                 updatedUser.getNickname()
         );
-
     }
 
-    public void withdrawal(String nickname, String password) {
+    public void withdrawal(String nickname, String password, HttpServletRequest request) {
 
         User findByNicknameUser = userRepository.findByNickname(nickname)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."));
@@ -117,6 +121,8 @@ public class UserService {
 
         userRepository.delete(findByNicknameUser);
 
+        HttpSession session = request.getSession(false);
+        session.invalidate();
     }
 
 }

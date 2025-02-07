@@ -8,18 +8,14 @@ import java.time.LocalDateTime;
 @Getter
 public class ScheduleResponseDto {
 
-    private final Long id;
-    private final String name;
-    private final String email;
+    private final String nickname;
     private final String title;
     private final String contents;
     private final LocalDateTime created_at;
     private final LocalDateTime updated_at;
 
-    public ScheduleResponseDto(Long id, String name, String email, String title, String contents, LocalDateTime created_at, LocalDateTime updated_at) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
+    public ScheduleResponseDto(String nickname, String title, String contents, LocalDateTime created_at, LocalDateTime updated_at) {
+        this.nickname = nickname;
         this.title = title;
         this.contents = contents;
         this.created_at = created_at;
@@ -28,9 +24,7 @@ public class ScheduleResponseDto {
 
     public static ScheduleResponseDto toDtoSchedule(Schedule schedule){
         return new ScheduleResponseDto(
-                schedule.getId(),
-                schedule.getUser().getUsername(),
-                schedule.getUser().getEmail(),
+                schedule.getUser().getNickname(),
                 schedule.getTitle(),
                 schedule.getContents(),
                 schedule.getCreated_at(),

@@ -2,7 +2,10 @@ package com.example.examplescheduleapp.service;
 
 import com.example.examplescheduleapp.dto.ScheduleResponseDto;
 import com.example.examplescheduleapp.entity.Schedule;
+import com.example.examplescheduleapp.filter.Const;
 import com.example.examplescheduleapp.repository.ScheduleRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,62 +21,54 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
 
-    public ScheduleResponseDto save(String nickname, String title, String contents) {
+    public ScheduleResponseDto save(HttpServletRequest request, String title, String contents) {
 
-
+        HttpSession session = request.getSession();
+        String nickname = session.getAttribute(Const.LOGIN_USER).toString();
 
         Schedule schedule = new Schedule(nickname, title, contents);
 
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         return new ScheduleResponseDto(
-                savedSchedule.getId(),
-                savedSchedule.getUser().getUsername(),
-                savedSchedule.getUser().getEmail(),
+                savedSchedule.getUser().getNickname(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContents(),
                 savedSchedule.getCreated_at(),
                 savedSchedule.getUpdated_at()
         );
-
     }
 
     public List<ScheduleResponseDto> findAll(){
 
         return scheduleRepository.findAll().stream().map(ScheduleResponseDto::toDtoSchedule).toList();
-
     }
 
     public ScheduleResponseDto findById(Long id) {
 
-        Schedule findByIdSchedule = scheduleRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"아이디가 존재하지 않습니다"));
+        Schedule findByIdSchedule = scheduleRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"일정이 존재하지 않습니다"));
 
         return new ScheduleResponseDto(
-                findByIdSchedule.getId(),
-                findByIdSchedule.getUser().getUsername(),
-                findByIdSchedule.getUser().getEmail(),
+                findByIdSchedule.getUser().getNickname(),
                 findByIdSchedule.getTitle(),
                 findByIdSchedule.getContents(),
                 findByIdSchedule.getCreated_at(),
                 findByIdSchedule.getUpdated_at()
         );
-
     }
 
 
     @Transactional
-    public ScheduleResponseDto update(Long id, String name, String title, String contents) {
+    public ScheduleResponseDto update(Long id, HttpServletRequest request, String title, String contents) {
 
-        Schedule findByIdSchedule = scheduleRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아이디가 존재하지 않습니다"));
+        Schedule findByIdSchedule = getSchedule(id, request);
 
-        findByIdSchedule.updateNameAndTitleAndContents(name, title, contents);
+        findByIdSchedule.updateTitleAndContents(title, contents);
 
         Schedule updatedSchedule = scheduleRepository.save(findByIdSchedule);
 
         return new ScheduleResponseDto(
-                updatedSchedule.getId(),
-                updatedSchedule.getUser().getUsername(),
-                updatedSchedule.getUser().getEmail(),
+                updatedSchedule.getUser().getNickname(),
                 updatedSchedule.getTitle(),
                 updatedSchedule.getContents(),
                 updatedSchedule.getCreated_at(),
@@ -81,11 +76,23 @@ public class ScheduleService {
         );
     }
 
-    public void delete(Long id) {
+    public void delete(Long id, HttpServletRequest request) {
 
-        Schedule findByIdSchedule = scheduleRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아이디가 존재하지 않습니다"));
+        Schedule findByIdSchedule = getSchedule(id, request);
 
         scheduleRepository.delete(findByIdSchedule);
-
     }
+
+    private Schedule getSchedule(Long id, HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        String nickname = session.getAttribute(Const.LOGIN_USER).toString();
+
+        Schedule findByIdSchedule = scheduleRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "일정이 존재하지 않습니다"));
+
+        if (!findByIdSchedule.getUser().getNickname().equals(nickname)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "작성자가 일치하지 않습니다.");
+        }
+        return findByIdSchedule;
+    }
+
 }

@@ -2,13 +2,11 @@ package com.example.examplescheduleapp.controller;
 
 import com.example.examplescheduleapp.dto.*;
 import com.example.examplescheduleapp.service.UserService;
-import lombok.Getter;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -18,50 +16,48 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserSignUpResponseDto> signUp(
-            @RequestBody UserSignUpRequestDto dto
+    public ResponseEntity<UserNicknameResponseDto> signUp(
+            @RequestBody UserSignUpRequestDto dto,
+            HttpServletRequest request
     ){
-        UserSignUpResponseDto savedUser = userService.signUp(dto.getUsername(),dto.getNickname(), dto.getEmail(), dto.getPassword());
+        UserNicknameResponseDto savedUser = userService.signUp(dto.getUsername(),dto.getNickname(), dto.getEmail(), dto.getPassword(), request);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
     @GetMapping("/login")
-    public ResponseEntity<UserSignUpResponseDto> login(
-            @ModelAttribute UserLoginRequestDto dto
+    public ResponseEntity<UserNicknameResponseDto> login(
+            @ModelAttribute UserLoginRequestDto dto,
+            HttpServletRequest request
     ){
-        UserSignUpResponseDto loginUser = userService.login(dto.getEmail(), dto.getPassword());
+        UserNicknameResponseDto loginUser = userService.login(dto.getEmail(), dto.getPassword(), request);
         return new ResponseEntity<>(loginUser, HttpStatus.ACCEPTED);
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponseDto>> findAll(){
-        List<UserResponseDto> findAllUser = userService.findAll();
-        return new ResponseEntity<>(findAllUser, HttpStatus.OK);
-    }
-
-    @GetMapping("/{nickname}")
-    public ResponseEntity<UserResponseDto> findByNickname(
-            @PathVariable String nickname
+    public ResponseEntity<UserInformationResponseDto> findByNickname(
+            @RequestParam String nickname
     ){
-        UserResponseDto findByIdUser = userService.findByNickname(nickname);
+        UserInformationResponseDto findByIdUser = userService.findByNickname(nickname);
         return new ResponseEntity<>(findByIdUser, HttpStatus.OK);
     }
 
-    @PatchMapping("/{nickname}")
-    public ResponseEntity<UserSignUpResponseDto> update(
-            @PathVariable String nickname,
-            @RequestBody UserRequestDto dto
+    @PatchMapping
+    public ResponseEntity<UserNicknameResponseDto> update(
+            @RequestParam String nickname,
+            @RequestBody UserUpdateRequestDto dto,
+            HttpServletRequest request
     ){
-        UserSignUpResponseDto updatedUser = userService.update(nickname, dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword());
+        UserNicknameResponseDto updatedUser = userService.update(nickname, dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword(), request);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     @DeleteMapping("/{nickname}")
     public ResponseEntity<Void> withdrawal(
-            @PathVariable String nickname,
-            @ModelAttribute UserLoginRequestDto dto
+            @RequestParam String nickname,
+            @ModelAttribute UserLoginRequestDto dto,
+            HttpServletRequest request
     ){
-        userService.withdrawal(nickname, dto.getPassword());
+        userService.withdrawal(nickname, dto.getPassword(), request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

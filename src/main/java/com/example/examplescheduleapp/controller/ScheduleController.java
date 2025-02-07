@@ -1,8 +1,9 @@
 package com.example.examplescheduleapp.controller;
 
-import com.example.examplescheduleapp.dto.ScheduleRequestDto;
+import com.example.examplescheduleapp.dto.ScheduleTitleAndContentsRequestDto;
 import com.example.examplescheduleapp.dto.ScheduleResponseDto;
 import com.example.examplescheduleapp.service.ScheduleService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,10 @@ public class ScheduleController {
 
     @PostMapping
     public ResponseEntity<ScheduleResponseDto> save(
-            @RequestBody ScheduleRequestDto dto
+            @RequestBody ScheduleTitleAndContentsRequestDto dto,
+            HttpServletRequest request
     ){
-        ScheduleResponseDto savedSchedule = scheduleService.save(dto.getNickname(), dto.getTitle(), dto.getContents());
+        ScheduleResponseDto savedSchedule = scheduleService.save(request, dto.getTitle(), dto.getContents());
         return new ResponseEntity<>(savedSchedule, HttpStatus.CREATED);
     }
 
@@ -42,19 +44,20 @@ public class ScheduleController {
     @PatchMapping("/{id}")
     public ResponseEntity<ScheduleResponseDto> update(
             @PathVariable Long id,
-            @RequestBody ScheduleRequestDto dto
+            @RequestBody ScheduleTitleAndContentsRequestDto dto,
+            HttpServletRequest request
     ){
-        ScheduleResponseDto updatedSchedule = scheduleService.update(id, dto.getName(), dto.getEmail(), dto.getTitle(), dto.getContents());
+        ScheduleResponseDto updatedSchedule = scheduleService.update(id, request, dto.getTitle(), dto.getContents());
         return new ResponseEntity<>(updatedSchedule, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable Long id
+            @PathVariable Long id,
+            HttpServletRequest request
     ){
-        scheduleService.delete(id);
+        scheduleService.delete(id, request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
 
 }
