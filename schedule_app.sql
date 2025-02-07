@@ -10,13 +10,12 @@ CREATE TABLE `Schedule` (
 );
 
 truncate table schedule;
-
 alter table schedule drop column username;
 alter table schedule add column user_id bigint not null;
 
 CREATE TABLE `user` (
                         `id` bigint	auto_increment primary key comment '고유값',
-                        `name` varchar(10) comment '유저명',
+                        `username` varchar(10) comment '유저명',
                         `email`	varchar(100) not null unique comment '이메일',
                         `created_at` datetime comment '작성일',
                         `updated_at` datetime comment '수정일'
@@ -25,3 +24,5 @@ CREATE TABLE `user` (
 ALTER TABLE `schedule` ADD CONSTRAINT `FK_user_TO_schedule_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 
 alter table user add column password varchar(20) not null comment '비밀번호';
+
+alter table user add column nickname varchar(10) not null unique comment '닉네임';

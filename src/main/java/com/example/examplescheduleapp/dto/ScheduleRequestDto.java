@@ -5,14 +5,12 @@ import lombok.Getter;
 @Getter
 public class ScheduleRequestDto {
 
-    private final String name;
-    private final String email;
+    private final String nickname;
     private final String title;
     private final String contents;
 
-    public ScheduleRequestDto(String name, String email, String title, String contents) {
-        this.name = name;
-        this.email = email;
+    public ScheduleRequestDto(String nickname, String title, String contents) {
+        this.nickname = nickname;
         this.title = title;
         this.contents = contents;
     }

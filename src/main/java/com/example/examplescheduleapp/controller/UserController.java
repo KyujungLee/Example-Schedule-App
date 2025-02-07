@@ -1,8 +1,8 @@
 package com.example.examplescheduleapp.controller;
 
-import com.example.examplescheduleapp.dto.UserRequestDto;
-import com.example.examplescheduleapp.dto.UserResponseDto;
+import com.example.examplescheduleapp.dto.*;
 import com.example.examplescheduleapp.service.UserService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +17,20 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<UserResponseDto> save(
-            @RequestBody UserRequestDto dto
+    @PostMapping("/signup")
+    public ResponseEntity<UserSignUpResponseDto> signUp(
+            @RequestBody UserSignUpRequestDto dto
     ){
-        UserResponseDto savedUser = userService.save(dto.getName(), dto.getEmail());
+        UserSignUpResponseDto savedUser = userService.signUp(dto.getUsername(),dto.getNickname(), dto.getEmail(), dto.getPassword());
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<UserSignUpResponseDto> login(
+            @ModelAttribute UserLoginRequestDto dto
+    ){
+        UserSignUpResponseDto loginUser = userService.login(dto.getEmail(), dto.getPassword());
+        return new ResponseEntity<>(loginUser, HttpStatus.ACCEPTED);
     }
 
     @GetMapping
@@ -31,28 +39,29 @@ public class UserController {
         return new ResponseEntity<>(findAllUser, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> findById(
-            @PathVariable Long id
+    @GetMapping("/{nickname}")
+    public ResponseEntity<UserResponseDto> findByNickname(
+            @PathVariable String nickname
     ){
-        UserResponseDto findByIdUser = userService.findById(id);
+        UserResponseDto findByIdUser = userService.findByNickname(nickname);
         return new ResponseEntity<>(findByIdUser, HttpStatus.OK);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<UserResponseDto> update(
-            @PathVariable Long id,
+    @PatchMapping("/{nickname}")
+    public ResponseEntity<UserSignUpResponseDto> update(
+            @PathVariable String nickname,
             @RequestBody UserRequestDto dto
     ){
-        UserResponseDto updatedUser = userService.update(id, dto.getName());
+        UserSignUpResponseDto updatedUser = userService.update(nickname, dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword());
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long id
+    @DeleteMapping("/{nickname}")
+    public ResponseEntity<Void> withdrawal(
+            @PathVariable String nickname,
+            @ModelAttribute UserLoginRequestDto dto
     ){
-        userService.delete(id);
+        userService.withdrawal(nickname, dto.getPassword());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

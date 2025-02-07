@@ -15,23 +15,31 @@ public class User extends BaseEntity{
 
     @Setter
     @Column(length = 10)
-    private String name;
+    private String username;
 
+    @Setter
     @Column(length = 100, nullable = false, unique = true)
     private String email;
 
+    @Setter
     @Column(length = 20, nullable = false)
     private String password;
+
+    @Setter
+    @Column(length = 10, nullable = false, unique = true)
+    private String nickname;
 
 
     public User() {}
 
-    public User(String name, String email) {
-        this.name = name;
+    public User(String username, String nickname, String email, String password) {
+        this.username = username;
+        this.nickname = nickname;
         this.email = email;
+        this.password = password;
     }
 
-    public void updateName(String name){
-        this.name = name;
+    public void updateUser(String name){
+        this.username = name;
     }
 }

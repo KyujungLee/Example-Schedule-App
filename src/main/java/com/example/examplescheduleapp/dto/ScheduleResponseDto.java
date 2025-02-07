@@ -29,7 +29,7 @@ public class ScheduleResponseDto {
     public static ScheduleResponseDto toDtoSchedule(Schedule schedule){
         return new ScheduleResponseDto(
                 schedule.getId(),
-                schedule.getUser().getName(),
+                schedule.getUser().getUsername(),
                 schedule.getUser().getEmail(),
                 schedule.getTitle(),
                 schedule.getContents(),

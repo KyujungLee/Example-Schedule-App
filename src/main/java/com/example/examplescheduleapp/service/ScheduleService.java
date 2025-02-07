@@ -18,15 +18,17 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
 
-    public ScheduleResponseDto save(String name, String title, String contents) {
+    public ScheduleResponseDto save(String nickname, String title, String contents) {
 
-        Schedule schedule = new Schedule(name, title, contents);
+
+
+        Schedule schedule = new Schedule(nickname, title, contents);
 
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
         return new ScheduleResponseDto(
                 savedSchedule.getId(),
-                savedSchedule.getUser().getName(),
+                savedSchedule.getUser().getUsername(),
                 savedSchedule.getUser().getEmail(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContents(),
@@ -48,7 +50,7 @@ public class ScheduleService {
 
         return new ScheduleResponseDto(
                 findByIdSchedule.getId(),
-                findByIdSchedule.getUser().getName(),
+                findByIdSchedule.getUser().getUsername(),
                 findByIdSchedule.getUser().getEmail(),
                 findByIdSchedule.getTitle(),
                 findByIdSchedule.getContents(),
@@ -70,7 +72,7 @@ public class ScheduleService {
 
         return new ScheduleResponseDto(
                 updatedSchedule.getId(),
-                updatedSchedule.getUser().getName(),
+                updatedSchedule.getUser().getUsername(),
                 updatedSchedule.getUser().getEmail(),
                 updatedSchedule.getTitle(),
                 updatedSchedule.getContents(),
