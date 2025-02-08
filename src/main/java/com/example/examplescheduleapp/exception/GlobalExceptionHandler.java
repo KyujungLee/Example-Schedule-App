@@ -1,5 +1,7 @@
 package com.example.examplescheduleapp.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
@@ -23,10 +24,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
     }
 
-    @ExceptionHandler({ UnauthorizedException.class, InvalidPasswordException.class, InvalidEmailException.class })
-    public ResponseEntity<String> handleUnauthorized(Exception e) {
+    @ExceptionHandler({ UnauthorizedException.class, InvalidPasswordException.class, UserNotFoundException.class })
+    public ResponseEntity<String> handleUnauthorized(Exception e, HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+
+        if (session != null){
+            session.invalidate();
+        }
+
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
+                .body(e.getMessage() + " 다시 로그인 해주세요.");
     }
 
 }

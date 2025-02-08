@@ -12,6 +12,7 @@ public class LoggingFilter implements Filter {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         System.out.println("[REQUEST] " + httpRequest.getMethod() + " " + httpRequest.getRequestURI());
+        httpRequest.getSession(false);
 
         filterChain.doFilter(request, response);
     }

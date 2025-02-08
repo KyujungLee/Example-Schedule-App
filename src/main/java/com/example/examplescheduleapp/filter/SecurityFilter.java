@@ -40,7 +40,9 @@ public class SecurityFilter implements Filter {
             throw new UnauthorizedException("로그인이 필요합니다.");
         }
 
-        if (requiresAuth(requestURI, method, session)) {
+        String requestNickname = httpRequest.getParameter("nickname");
+
+        if (requiresAuth(requestURI, method, session) && !requestNickname.equals(session.getAttribute(Const.LOGIN_USER))) {
             throw new UnauthorizedException("권한이 없습니다.");
         }
 

@@ -4,6 +4,7 @@ import com.example.examplescheduleapp.dto.response.ScheduleResponseDto;
 import com.example.examplescheduleapp.entity.Schedule;
 import com.example.examplescheduleapp.entity.User;
 import com.example.examplescheduleapp.config.Const;
+import com.example.examplescheduleapp.exception.UserNotFoundException;
 import com.example.examplescheduleapp.repository.ScheduleRepository;
 import com.example.examplescheduleapp.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,10 +28,11 @@ public class ScheduleService {
     @Transactional
     public ScheduleResponseDto save(HttpServletRequest request, String title, String contents) {
 
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
         String nickname = session.getAttribute(Const.LOGIN_USER).toString();
 
-        User findByNicknameUser = userRepository.findByNicknameOrElseThrow(nickname);
+        User findByNicknameUser = userRepository.findByNickname(nickname)
+                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저입니다."));
 
         Schedule schedule = new Schedule(findByNicknameUser, title, contents);
 
@@ -75,7 +77,7 @@ public class ScheduleService {
     }
 
     private Schedule getSchedule(Long id, HttpServletRequest request) {
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
         String nickname = session.getAttribute(Const.LOGIN_USER).toString();
 
         Schedule findByIdSchedule = scheduleRepository.findByIdOrElseThrow(id);

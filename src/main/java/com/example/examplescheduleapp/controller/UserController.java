@@ -59,11 +59,10 @@ public class UserController {
 
     @DeleteMapping
     public ResponseEntity<Void> withdrawal(
-            @RequestParam String nickname,
             @RequestBody UserWithdrawalRequestDto dto,
             HttpServletRequest request
     ){
-        userService.withdrawal(nickname, dto.getPassword(), request);
+        userService.withdrawal(dto.getPassword(), request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

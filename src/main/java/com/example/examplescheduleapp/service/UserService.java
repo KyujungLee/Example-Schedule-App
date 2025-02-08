@@ -7,7 +7,7 @@ import com.example.examplescheduleapp.dto.response.UserSignUpResponseDto;
 import com.example.examplescheduleapp.entity.User;
 import com.example.examplescheduleapp.config.Const;
 import com.example.examplescheduleapp.exception.InvalidPasswordException;
-import com.example.examplescheduleapp.exception.InvalidEmailException;
+import com.example.examplescheduleapp.exception.UserNotFoundException;
 import com.example.examplescheduleapp.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -48,7 +48,7 @@ public class UserService {
     public UserLoginResponseDto login(String email, String password, HttpServletRequest request) {
 
         User verifiedUser = userRepository.findByEmail(email)
-                .orElseThrow(()-> new InvalidEmailException("존재하지 않는 이메일입니다."));
+                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 이메일입니다."));
         if (!verifiedUser.getPassword().equals(password)){
             throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
         }
@@ -62,7 +62,7 @@ public class UserService {
     public UserFindByNicknameResponseDto findByNickname(String nickname) {
 
         User findByNicknameUser = userRepository.findByNickname(nickname)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."));
+                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저입니다."));
 
         return new UserFindByNicknameResponseDto(findByNicknameUser);
     }
@@ -70,10 +70,10 @@ public class UserService {
     @Transactional
     public UserUpdateResponseDto update(String updateUsername, String updateNickname, String updateEmail, String updatePassword, HttpServletRequest request) {
 
-        String originalNickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
+        String originalNickname = request.getSession(false).getAttribute(Const.LOGIN_USER).toString();
 
         User findByNicknameUser = userRepository.findByNickname(originalNickname)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."));
+                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저입니다."));
 
         if (findByNicknameUser.getNickname().equals(updateNickname)
                 && findByNicknameUser.getEmail().equals(updateEmail)
@@ -84,7 +84,7 @@ public class UserService {
         }
 
         if (userRepository.existsByNickname(updateNickname) || userRepository.existsByEmail(updateEmail)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용중인 이메일 또는 닉네임입니다.");
+            throw new DataIntegrityViolationException("이미 사용중인 이메일 또는 닉네임입니다.");
         }
 
         findByNicknameUser.updateInformation(updateUsername, updateNickname, updateEmail, updatePassword);
@@ -97,16 +97,18 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public void withdrawal(String nickname, String password, HttpServletRequest request) {
-
-        User findByNicknameUser = userRepository.findByNickname(nickname)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."));;
-
-        if (!findByNicknameUser.getPassword().equals(password)){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
-        }
+    public void withdrawal(String password, HttpServletRequest request) {
 
         HttpSession session = request.getSession(false);
+        String nickname = session.getAttribute(Const.LOGIN_USER).toString();
+
+        User findByNicknameUser = userRepository.findByNickname(nickname)
+                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저입니다."));;
+
+        if (!findByNicknameUser.getPassword().equals(password)){
+            throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
+        }
+
         if (session != null){
             session.invalidate();
         }
