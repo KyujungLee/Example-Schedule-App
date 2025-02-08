@@ -1,7 +1,8 @@
 package com.example.examplescheduleapp.controller;
 
-import com.example.examplescheduleapp.dto.ScheduleTitleAndContentsRequestDto;
-import com.example.examplescheduleapp.dto.ScheduleResponseDto;
+import com.example.examplescheduleapp.dto.request.ScheduleSaveRequestDto;
+import com.example.examplescheduleapp.dto.request.ScheduleUpdateRequestDto;
+import com.example.examplescheduleapp.dto.response.ScheduleResponseDto;
 import com.example.examplescheduleapp.service.ScheduleService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class ScheduleController {
 
     @PostMapping
     public ResponseEntity<ScheduleResponseDto> save(
-            @RequestBody ScheduleTitleAndContentsRequestDto dto,
+            @RequestBody ScheduleSaveRequestDto dto,
             HttpServletRequest request
     ){
         ScheduleResponseDto savedSchedule = scheduleService.save(request, dto.getTitle(), dto.getContents());
@@ -44,7 +45,7 @@ public class ScheduleController {
     @PatchMapping("/{id}")
     public ResponseEntity<ScheduleResponseDto> update(
             @PathVariable Long id,
-            @RequestBody ScheduleTitleAndContentsRequestDto dto,
+            @RequestBody ScheduleUpdateRequestDto dto,
             HttpServletRequest request
     ){
         ScheduleResponseDto updatedSchedule = scheduleService.update(id, request, dto.getTitle(), dto.getContents());

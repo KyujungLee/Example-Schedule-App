@@ -25,8 +25,8 @@ public class Schedule extends BaseEntity{
 
     public Schedule() {}
 
-    public Schedule(String nickname, String title, String contents) {
-        user.setNickname(nickname);
+    public Schedule(User user, String title, String contents) {
+        this.user = user;
         this.title = title;
         this.contents = contents;
     }
