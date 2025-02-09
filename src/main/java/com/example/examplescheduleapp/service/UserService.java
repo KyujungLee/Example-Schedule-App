@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements Check{
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -60,25 +60,28 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserFindByNicknameResponseDto findByNickname(String nickname) {
+    public UserFindByNicknameResponseDto findByNickname(String nickname, HttpServletRequest request) {
 
-        User findByNicknameUser = getFindByNicknameUser(nickname);
+        checkAuthorization(nickname, request);
+
+        User findByNicknameUser = getFindByNicknameUserOrElseThrow(nickname);
 
         return new UserFindByNicknameResponseDto(findByNicknameUser);
     }
 
+
+
     @Transactional
-    public UserUpdateResponseDto update(String updateUsername, String updateNickname, String updateEmail, String updatePassword, HttpServletRequest request) {
+    public UserUpdateResponseDto update(String nickname, String updateUsername, String updateNickname, String updateEmail, String updatePassword, HttpServletRequest request) {
 
-        String originalNickname = request.getSession(false).getAttribute(Const.LOGIN_USER).toString();
+        checkAuthorization(nickname, request);
 
-        User findByNicknameUser = getFindByNicknameUser(originalNickname);
+        User findByNicknameUser = getFindByNicknameUserOrElseThrow(nickname);
 
         if (isEqualsToDB(updateUsername, updateNickname, updateEmail, updatePassword, findByNicknameUser)
         ) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "변경할 내용이 없습니다.");
         }
-
         if (userRepository.existsByNickname(updateNickname) || userRepository.existsByEmail(updateEmail)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용중인 이메일 또는 닉네임입니다.");
         }
@@ -96,18 +99,17 @@ public class UserService {
 
 
     @Transactional
-    public void withdrawal(String password, HttpServletRequest request) {
+    public void withdrawal(String nickname, String password, HttpServletRequest request) {
 
-        HttpSession session = request.getSession(false);
-        String nickname = session.getAttribute(Const.LOGIN_USER).toString();
+        checkAuthorization(nickname, request);
 
-        User findByNicknameUser = getFindByNicknameUser(nickname);
+        User findByNicknameUser = getFindByNicknameUserOrElseThrow(nickname);
 
         if (!findByNicknameUser.getPassword().equals(password)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
         }
 
-        session.invalidate();
+        request.getSession().invalidate();
 
         userRepository.delete(findByNicknameUser);
     }
@@ -125,9 +127,10 @@ public class UserService {
                 && findByNicknameUser.getUsername().equals(updateUsername);
     }
 
-    private User getFindByNicknameUser(String nickname) {
+    private User getFindByNicknameUserOrElseThrow(String nickname) {
         return userRepository.findByNickname(nickname)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."));
     }
+
 
 }

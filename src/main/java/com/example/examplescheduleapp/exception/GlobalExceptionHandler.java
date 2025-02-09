@@ -33,6 +33,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(e.getStatusCode().toString(), "입력 값이 잘못되었습니다.", errorDetails));
     }
 
+    // 일반적인 400번대 오류
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponseDto> handleResponseStatusException(ResponseStatusException e) {
         logger.warn("[WARN] {}", e.getMessage());
@@ -46,7 +47,7 @@ public class GlobalExceptionHandler {
         logger.error("[ERROR] {} {} - {}", request.getMethod(), request.getRequestURI(), e.getMessage());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponseDto("500 INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.", List.of()));
+                .body(new ErrorResponseDto(e.getMessage(), "서버 내부 오류가 발생했습니다.", List.of()));
     }
 
 }

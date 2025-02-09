@@ -43,27 +43,30 @@ public class UserController {
 
     @GetMapping("/{nickname}")
     public ResponseEntity<UserFindByNicknameResponseDto> findByNickname(
-            @PathVariable String nickname
+            @PathVariable String nickname,
+            HttpServletRequest request
     ){
-        UserFindByNicknameResponseDto findByIdUser = userService.findByNickname(nickname);
-        return new ResponseEntity<>(findByIdUser, HttpStatus.OK);
+        UserFindByNicknameResponseDto findByNicknameUser = userService.findByNickname(nickname, request);
+        return new ResponseEntity<>(findByNicknameUser, HttpStatus.OK);
     }
 
-    @PatchMapping
+    @PatchMapping("/{nickname}")
     public ResponseEntity<UserUpdateResponseDto> update(
+            @PathVariable String nickname,
             @Valid @RequestBody UserUpdateRequestDto dto,
             HttpServletRequest request
     ){
-        UserUpdateResponseDto updatedUser = userService.update(dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword(), request);
+        UserUpdateResponseDto updatedUser = userService.update(nickname, dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword(), request);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{nickname}")
     public ResponseEntity<Void> withdrawal(
+            @PathVariable String nickname,
             @Valid @RequestBody UserWithdrawalRequestDto dto,
             HttpServletRequest request
     ){
-        userService.withdrawal(dto.getPassword(), request);
+        userService.withdrawal(nickname, dto.getPassword(), request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
