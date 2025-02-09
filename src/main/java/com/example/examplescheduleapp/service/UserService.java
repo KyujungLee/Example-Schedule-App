@@ -1,5 +1,6 @@
 package com.example.examplescheduleapp.service;
 
+import com.example.examplescheduleapp.config.PasswordEncoder;
 import com.example.examplescheduleapp.dto.response.UserFindByNicknameResponseDto;
 import com.example.examplescheduleapp.dto.response.UserLoginResponseDto;
 import com.example.examplescheduleapp.dto.response.UserUpdateResponseDto;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserSignUpResponseDto signUp(String username, String nickname, String email, String password, HttpServletRequest request) {
@@ -31,7 +33,9 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,"이미 사용중인 이메일입니다.");
         }
 
-        User user = new User(username, nickname, email, password);
+        String encodedPassword = passwordEncoder.encode(password);
+
+        User user = new User(username, nickname, email, encodedPassword);
 
         User savedUser = userRepository.save(user);
 
@@ -45,7 +49,8 @@ public class UserService {
 
         User verifiedUser = userRepository.findByEmail(email)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "존재하지 않는 이메일입니다."));
-        if (!verifiedUser.getPassword().equals(password)){
+
+        if (!passwordEncoder.matches(password, verifiedUser.getPassword())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
         }
 
@@ -78,7 +83,9 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용중인 이메일 또는 닉네임입니다.");
         }
 
-        findByNicknameUser.updateInformation(updateUsername, updateNickname, updateEmail, updatePassword);
+        String encodedPassword = passwordEncoder.encode(updatePassword);
+
+        findByNicknameUser.updateInformation(updateUsername, updateNickname, updateEmail, encodedPassword);
 
         User updatedUser = userRepository.save(findByNicknameUser);
 
@@ -114,7 +121,7 @@ public class UserService {
     private boolean isEqualsToDB(String updateUsername, String updateNickname, String updateEmail, String updatePassword, User findByNicknameUser) {
         return findByNicknameUser.getNickname().equals(updateNickname)
                 && findByNicknameUser.getEmail().equals(updateEmail)
-                && findByNicknameUser.getPassword().equals(updatePassword)
+                && passwordEncoder.matches(updatePassword, findByNicknameUser.getPassword())
                 && findByNicknameUser.getUsername().equals(updateUsername);
     }
 
