@@ -4,7 +4,6 @@ import com.example.examplescheduleapp.dto.response.ScheduleResponseDto;
 import com.example.examplescheduleapp.entity.Schedule;
 import com.example.examplescheduleapp.entity.User;
 import com.example.examplescheduleapp.config.Const;
-import com.example.examplescheduleapp.exception.UserNotFoundException;
 import com.example.examplescheduleapp.repository.ScheduleRepository;
 import com.example.examplescheduleapp.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +31,7 @@ public class ScheduleService {
         String nickname = session.getAttribute(Const.LOGIN_USER).toString();
 
         User findByNicknameUser = userRepository.findByNickname(nickname)
-                .orElseThrow(()-> new UserNotFoundException("존재하지 않는 유저입니다."));
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."));
 
         Schedule schedule = new Schedule(findByNicknameUser, title, contents);
 
@@ -50,7 +49,8 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public ScheduleResponseDto findById(Long id) {
 
-        Schedule findByIdSchedule = scheduleRepository.findByIdOrElseThrow(id);
+        Schedule findByIdSchedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"일정이 존재하지 않습니다"));
 
         return new ScheduleResponseDto(findByIdSchedule);
     }
@@ -68,7 +68,7 @@ public class ScheduleService {
         return new ScheduleResponseDto(updatedSchedule);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void delete(Long id, HttpServletRequest request) {
 
         Schedule findByIdSchedule = getSchedule(id, request);
@@ -80,7 +80,8 @@ public class ScheduleService {
         HttpSession session = request.getSession(false);
         String nickname = session.getAttribute(Const.LOGIN_USER).toString();
 
-        Schedule findByIdSchedule = scheduleRepository.findByIdOrElseThrow(id);
+        Schedule findByIdSchedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"일정이 존재하지 않습니다"));
 
         if (!findByIdSchedule.getUser().getNickname().equals(nickname)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "작성자가 일치하지 않습니다.");

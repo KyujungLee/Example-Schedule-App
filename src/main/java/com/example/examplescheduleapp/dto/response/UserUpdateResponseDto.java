@@ -8,8 +8,6 @@ public class UserUpdateResponseDto {
 
     private final String nickname;
 
-    public UserUpdateResponseDto(User user) {
-        this.nickname = user.getNickname();
-    }
+    public UserUpdateResponseDto(User user) { this.nickname = user.getNickname(); }
 
 }

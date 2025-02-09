@@ -1,25 +1,21 @@
 package com.example.examplescheduleapp.filter;
 
 import com.example.examplescheduleapp.config.Const;
-import com.example.examplescheduleapp.exception.UnauthorizedException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.util.AntPathMatcher;
+import org.springframework.http.HttpStatus;
+import org.springframework.util.PatternMatchUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class SecurityFilter implements Filter {
 
-    private final List<String> publicPaths;
-    private final Map<String, List<String>> protectedResources;
-    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+    private final String[] publicPaths;
 
-    public SecurityFilter(List<String> publicPaths, Map<String, List<String>> protectedResources) {
+    public SecurityFilter(String[] publicPaths) {
         this.publicPaths = publicPaths;
-        this.protectedResources = protectedResources;
     }
 
     @Override
@@ -35,33 +31,29 @@ public class SecurityFilter implements Filter {
             return;
         }
 
-        HttpSession session = httpRequest.getSession(false);
-        if (session == null || session.getAttribute(Const.LOGIN_USER) == null) {
-            throw new UnauthorizedException("로그인이 필요합니다.");
+        try {
+            HttpSession session = httpRequest.getSession(false);
+
+            // 세션이 없으면 바로 예외 발생 (NPE 방지)
+            if (session == null || session.getAttribute(Const.LOGIN_USER) == null) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+            }
+
+            // 정상적으로 로그인된 사용자만 다음 필터 실행
+            filterChain.doFilter(request, response);
+
+        } catch (ResponseStatusException e) {
+            request.setAttribute("exception", e);
+            request.getRequestDispatcher("/error/unauthorized").forward(request, response);
+        } catch (Exception e) {
+            request.setAttribute("exception", e);
+            request.getRequestDispatcher("/error/internal").forward(request, response);
         }
 
-        String requestNickname = httpRequest.getParameter("nickname");
-
-        if (requiresAuth(requestURI, method, session) && !requestNickname.equals(session.getAttribute(Const.LOGIN_USER))) {
-            throw new UnauthorizedException("권한이 없습니다.");
-        }
-
-        filterChain.doFilter(request, response);
     }
 
     private boolean isPublicPath(String requestURI) {
-        return publicPaths.stream().anyMatch(path -> pathMatcher.match(path, requestURI));
+        return PatternMatchUtils.simpleMatch(publicPaths, requestURI);
     }
 
-    private boolean requiresAuth(String requestURI, String method, HttpSession session) {
-        return protectedResources.entrySet().stream()
-                .anyMatch(entry -> pathMatcher.match(entry.getKey(), requestURI) &&
-                        entry.getValue().contains(method.toUpperCase()) &&
-                        !isUserAuthorized(session, requestURI));
-    }
-
-    private boolean isUserAuthorized(HttpSession session, String requestURI) {
-        String loggedInUser = (String) session.getAttribute(Const.LOGIN_USER);
-        return loggedInUser != null;
-    }
 }

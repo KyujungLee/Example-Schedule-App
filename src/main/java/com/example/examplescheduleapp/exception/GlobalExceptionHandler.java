@@ -1,40 +1,52 @@
 package com.example.examplescheduleapp.exception;
 
+import com.example.examplescheduleapp.dto.response.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<String> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(e.getMessage());
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    // 클라이언트의 잘못된 요청 (400 Bad Request)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException e) {
+        logger.warn("[VALIDATION WARN] {}", e.getMessage());
+
+        List<String> errorDetails = e.getBindingResult().getAllErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(e.getStatusCode().toString(), "입력 값이 잘못되었습니다.", errorDetails));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e) {
-        return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+    public ResponseEntity<ErrorResponseDto> handleResponseStatusException(ResponseStatusException e) {
+        logger.warn("[WARN] {}", e.getMessage());
+
+        return ResponseEntity.status(e.getStatusCode()).body(new ErrorResponseDto(e.getStatusCode().toString(), e.getReason(), List.of()));
     }
 
-    @ExceptionHandler({ UnauthorizedException.class, InvalidPasswordException.class, UserNotFoundException.class })
-    public ResponseEntity<String> handleUnauthorized(Exception e, HttpServletRequest request) {
+    // 서버 내부 오류 (500 Internal Server Error)
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDto> handleAllExceptions(Exception e, HttpServletRequest request) {
+        logger.error("[ERROR] {} {} - {}", request.getMethod(), request.getRequestURI(), e.getMessage());
 
-        HttpSession session = request.getSession(false);
-
-        if (session != null){
-            session.invalidate();
-        }
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage() + " 다시 로그인 해주세요.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDto("500 INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다.", List.of()));
     }
 
 }

@@ -10,6 +10,7 @@ import com.example.examplescheduleapp.dto.response.UserSignUpResponseDto;
 import com.example.examplescheduleapp.dto.response.UserUpdateResponseDto;
 import com.example.examplescheduleapp.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<UserSignUpResponseDto> signUp(
-            @RequestBody UserSignUpRequestDto dto,
+            @Valid @RequestBody UserSignUpRequestDto dto,
             HttpServletRequest request
     ){
         UserSignUpResponseDto savedUser = userService.signUp(dto.getUsername(),dto.getNickname(), dto.getEmail(), dto.getPassword(), request);
@@ -33,16 +34,16 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(
-            @RequestBody UserLoginRequestDto dto,
+            @Valid @RequestBody UserLoginRequestDto dto,
             HttpServletRequest request
     ){
         UserLoginResponseDto loginUser = userService.login(dto.getEmail(), dto.getPassword(), request);
         return new ResponseEntity<>(loginUser, HttpStatus.ACCEPTED);
     }
 
-    @GetMapping
+    @GetMapping("/{nickname}")
     public ResponseEntity<UserFindByNicknameResponseDto> findByNickname(
-            @RequestParam String nickname
+            @PathVariable String nickname
     ){
         UserFindByNicknameResponseDto findByIdUser = userService.findByNickname(nickname);
         return new ResponseEntity<>(findByIdUser, HttpStatus.OK);
@@ -50,7 +51,7 @@ public class UserController {
 
     @PatchMapping
     public ResponseEntity<UserUpdateResponseDto> update(
-            @RequestBody UserUpdateRequestDto dto,
+            @Valid @RequestBody UserUpdateRequestDto dto,
             HttpServletRequest request
     ){
         UserUpdateResponseDto updatedUser = userService.update(dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword(), request);
@@ -59,7 +60,7 @@ public class UserController {
 
     @DeleteMapping
     public ResponseEntity<Void> withdrawal(
-            @RequestBody UserWithdrawalRequestDto dto,
+            @Valid @RequestBody UserWithdrawalRequestDto dto,
             HttpServletRequest request
     ){
         userService.withdrawal(dto.getPassword(), request);
