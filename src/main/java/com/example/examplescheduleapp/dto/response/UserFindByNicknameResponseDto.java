@@ -19,7 +19,7 @@ public class UserFindByNicknameResponseDto {
         this.nickname = user.getNickname();
         this.email = user.getEmail();
         this.created_at = user.getCreated_at();
-        this.updated_at = user.getUpdated_at();
+        this.updated_at = user.getUpdatedAt();
     }
 
 }

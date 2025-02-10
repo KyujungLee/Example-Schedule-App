@@ -3,6 +3,8 @@ package com.example.examplescheduleapp.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Table(name = "schedule")

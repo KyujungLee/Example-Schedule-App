@@ -20,6 +20,7 @@ public abstract class BaseEntity {
     private LocalDateTime created_at;
 
     @LastModifiedDate
-    private LocalDateTime updated_at;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
 }

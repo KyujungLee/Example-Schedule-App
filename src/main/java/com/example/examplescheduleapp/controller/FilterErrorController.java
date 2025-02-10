@@ -10,7 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/error")
 public class FilterErrorController {
 
-    @RequestMapping("/unauthorized")
+    @RequestMapping("/auth")
     public void handleUnauthorizedException(HttpServletRequest request) {
         throw (ResponseStatusException) request.getAttribute("exception");
     }

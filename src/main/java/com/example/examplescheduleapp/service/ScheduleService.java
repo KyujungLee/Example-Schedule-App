@@ -1,34 +1,39 @@
 package com.example.examplescheduleapp.service;
 
+import com.example.examplescheduleapp.config.Const;
 import com.example.examplescheduleapp.dto.response.ScheduleResponseDto;
 import com.example.examplescheduleapp.entity.Schedule;
 import com.example.examplescheduleapp.entity.User;
+import com.example.examplescheduleapp.exception.HasNoAuthorizationException;
+import com.example.examplescheduleapp.exception.ScheduleNotFoundException;
+import com.example.examplescheduleapp.exception.UserNotFoundException;
 import com.example.examplescheduleapp.repository.ScheduleRepository;
 import com.example.examplescheduleapp.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import java.util.List;
 
 
 @Service
 @RequiredArgsConstructor
-public class ScheduleService implements Check{
+public class ScheduleService implements CommonMethods {
 
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
 
 
     @Transactional
-    public ScheduleResponseDto save(String nickname, HttpServletRequest request, String title, String contents) {
+    public ScheduleResponseDto save(HttpServletRequest request, String title, String contents) {
 
-        checkAuthorization(nickname, request);
+        String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
 
-        User findByNicknameUser = userRepository.findByNickname(nickname)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."));
+        User findByNicknameUser = getFindByNicknameUserOrElseThrow(nickname);
 
         Schedule schedule = new Schedule(findByNicknameUser, title, contents);
 
@@ -38,9 +43,13 @@ public class ScheduleService implements Check{
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleResponseDto> findAll(){
+    public Page<ScheduleResponseDto> findAll(int page, int size){
 
-        return scheduleRepository.findAll().stream().map(ScheduleResponseDto::toDtoSchedule).toList();
+        if (size <= 0) { size = 10; }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return scheduleRepository.findAllByOrderByUpdatedAtDesc(pageable).map(ScheduleResponseDto::toDtoSchedule);
     }
 
     @Transactional(readOnly = true)
@@ -51,13 +60,14 @@ public class ScheduleService implements Check{
         return new ScheduleResponseDto(findByIdSchedule);
     }
 
-
     @Transactional
-    public ScheduleResponseDto update(Long id, String nickname, HttpServletRequest request, String title, String contents) {
+    public ScheduleResponseDto update(Long id, HttpServletRequest request, String title, String contents) {
 
-        checkAuthorization(nickname, request);
+        checkAuthorizationOfSchedule(id, request);
 
         Schedule findByIdSchedule = getFindByIdScheduleOrElseThrow(id);
+
+        compareEqualsAndThrow(isEqualsToDB(title, contents, findByIdSchedule), HttpStatus.BAD_REQUEST, "변경할 내용이 없습니다.");
 
         findByIdSchedule.updateTitleAndContents(title, contents);
 
@@ -67,18 +77,34 @@ public class ScheduleService implements Check{
     }
 
     @Transactional
-    public void delete(Long id, String nickname, HttpServletRequest request) {
+    public void delete(Long id, HttpServletRequest request) {
 
-        checkAuthorization(nickname, request);
+        checkAuthorizationOfSchedule(id, request);
 
         Schedule findByIdSchedule = getFindByIdScheduleOrElseThrow(id);
 
         scheduleRepository.delete(findByIdSchedule);
     }
 
+
+    private void checkAuthorizationOfSchedule(Long id, HttpServletRequest request) {
+        String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
+        Schedule findByIdSchedule = getFindByIdScheduleOrElseThrow(id);
+        if (!nickname.equals(findByIdSchedule.getUser().getNickname())){
+            throw new HasNoAuthorizationException();
+        }
+    }
+
+    private boolean isEqualsToDB(String title, String contents, Schedule findByIdSchedule){
+        return title.equals(findByIdSchedule.getTitle()) && contents.equals(findByIdSchedule.getContents());
+    }
+
     private Schedule getFindByIdScheduleOrElseThrow(Long id) {
-        return scheduleRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"일정이 존재하지 않습니다"));
+        return scheduleRepository.findById(id).orElseThrow(ScheduleNotFoundException::new);
+    }
+
+    private User getFindByNicknameUserOrElseThrow(String nickname) {
+        return userRepository.findByNickname(nickname).orElseThrow(UserNotFoundException::new);
     }
 
 }

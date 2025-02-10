@@ -17,7 +17,7 @@ public class ReplyResponseDto {
         this.id = reply.getId();
         this.contents = reply.getContents();
         this.nickname = reply.getUser().getNickname();
-        this.updated_at = reply.getUpdated_at();
+        this.updated_at = reply.getUpdatedAt();
     }
 
     public static ReplyResponseDto toDtoReply(Reply reply){

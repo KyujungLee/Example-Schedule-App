@@ -32,7 +32,7 @@ public class UserController {
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-    @PostMapping("/login")
+    @PatchMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(
             @Valid @RequestBody UserLoginRequestDto dto,
             HttpServletRequest request
@@ -41,32 +41,37 @@ public class UserController {
         return new ResponseEntity<>(loginUser, HttpStatus.ACCEPTED);
     }
 
-    @GetMapping("/{nickname}")
-    public ResponseEntity<UserFindByNicknameResponseDto> findByNickname(
-            @PathVariable String nickname,
+    @PatchMapping("/logout")
+    public ResponseEntity<Void> logout(
             HttpServletRequest request
     ){
-        UserFindByNicknameResponseDto findByNicknameUser = userService.findByNickname(nickname, request);
+        userService.logout(request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<UserFindByNicknameResponseDto> findInformation(
+            HttpServletRequest request
+    ){
+        UserFindByNicknameResponseDto findByNicknameUser = userService.findInformation(request);
         return new ResponseEntity<>(findByNicknameUser, HttpStatus.OK);
     }
 
-    @PatchMapping("/{nickname}")
+    @PatchMapping
     public ResponseEntity<UserUpdateResponseDto> update(
-            @PathVariable String nickname,
             @Valid @RequestBody UserUpdateRequestDto dto,
             HttpServletRequest request
     ){
-        UserUpdateResponseDto updatedUser = userService.update(nickname, dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword(), request);
+        UserUpdateResponseDto updatedUser = userService.update(dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword(), request);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{nickname}")
+    @DeleteMapping
     public ResponseEntity<Void> withdrawal(
-            @PathVariable String nickname,
             @Valid @RequestBody UserWithdrawalRequestDto dto,
             HttpServletRequest request
     ){
-        userService.withdrawal(nickname, dto.getPassword(), request);
+        userService.withdrawal(dto.getPassword(), request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

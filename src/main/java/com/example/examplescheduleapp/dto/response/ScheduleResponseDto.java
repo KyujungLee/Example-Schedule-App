@@ -19,7 +19,7 @@ public class ScheduleResponseDto {
         this.title = schedule.getTitle();
         this.contents = schedule.getContents();
         this.created_at = schedule.getCreated_at();
-        this.updated_at = schedule.getUpdated_at();
+        this.updated_at = schedule.getUpdatedAt();
     }
 
     public static ScheduleResponseDto toDtoSchedule(Schedule schedule){
