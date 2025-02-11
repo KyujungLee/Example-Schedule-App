@@ -1,7 +1,6 @@
 package com.example.examplescheduleapp.filter;
 
 import com.example.examplescheduleapp.config.Const;
-import com.example.examplescheduleapp.exception.HasNoAuthorizationException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -36,7 +35,7 @@ public class SecurityFilter implements Filter {
 
             // 세션이 없으면 바로 예외 발생 (NPE 방지)
             if (session == null || session.getAttribute(Const.LOGIN_USER) == null) {
-                throw new HasNoAuthorizationException("로그인이 필요합니다.");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
             }
 
             // 정상적으로 로그인된 사용자만 다음 필터 실행

@@ -1,9 +1,6 @@
 package com.example.examplescheduleapp.controller;
 
-import com.example.examplescheduleapp.dto.request.UserLoginRequestDto;
-import com.example.examplescheduleapp.dto.request.UserSignUpRequestDto;
-import com.example.examplescheduleapp.dto.request.UserUpdateRequestDto;
-import com.example.examplescheduleapp.dto.request.UserWithdrawalRequestDto;
+import com.example.examplescheduleapp.dto.request.*;
 import com.example.examplescheduleapp.dto.response.UserFindByNicknameResponseDto;
 import com.example.examplescheduleapp.dto.response.UserLoginResponseDto;
 import com.example.examplescheduleapp.dto.response.UserSignUpResponseDto;
@@ -49,11 +46,12 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping
+    @PatchMapping
     public ResponseEntity<UserFindByNicknameResponseDto> findInformation(
+            @Valid @RequestBody UserInformationRequestDto dto,
             HttpServletRequest request
     ){
-        UserFindByNicknameResponseDto findByNicknameUser = userService.findInformation(request);
+        UserFindByNicknameResponseDto findByNicknameUser = userService.findInformation(dto.getPassword(), request);
         return new ResponseEntity<>(findByNicknameUser, HttpStatus.OK);
     }
 
@@ -62,7 +60,7 @@ public class UserController {
             @Valid @RequestBody UserUpdateRequestDto dto,
             HttpServletRequest request
     ){
-        UserUpdateResponseDto updatedUser = userService.update(dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getPassword(), request);
+        UserUpdateResponseDto updatedUser = userService.update(dto.getUsername(), dto.getNickname() , dto.getEmail(), dto.getNewPassword(), dto.getOldPassword(), request);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 

@@ -7,7 +7,6 @@ import com.example.examplescheduleapp.dto.response.UserUpdateResponseDto;
 import com.example.examplescheduleapp.dto.response.UserSignUpResponseDto;
 import com.example.examplescheduleapp.entity.User;
 import com.example.examplescheduleapp.config.Const;
-import com.example.examplescheduleapp.exception.UserNotFoundException;
 import com.example.examplescheduleapp.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -31,9 +30,7 @@ public class UserService implements CommonMethods {
         checkDuplicationsOfUniqueValue(nickname, email);
 
         String encodedPassword = passwordEncoder.encode(password);
-
         User user = new User(username, nickname, email, encodedPassword);
-
         User savedUser = userRepository.save(user);
 
         initializedSession(request, savedUser);
@@ -44,9 +41,8 @@ public class UserService implements CommonMethods {
     @Transactional(readOnly = true)
     public UserLoginResponseDto login(String email, String password, HttpServletRequest request) {
 
-        User loginUser = getFindByEmailUserOrElseThrow(email);
-
-        compareEqualsAndThrow(passwordEncoder.matches(loginUser.getPassword(),password), HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
+        User loginUser = userRepository.findByEmail(email).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
+        ifTrueThenThrow(!passwordEncoder.matches(loginUser.getPassword(),password), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
         initializedSession(request, loginUser);
 
@@ -54,30 +50,35 @@ public class UserService implements CommonMethods {
     }
 
     public void logout(HttpServletRequest request) {
+
         request.getSession().invalidate();
     }
 
     @Transactional(readOnly = true)
-    public UserFindByNicknameResponseDto findInformation(HttpServletRequest request) {
+    public UserFindByNicknameResponseDto findInformation(String password, HttpServletRequest request) {
 
-        User findByNicknameUser = getFindByNicknameUserOrElseThrow(request);
+        // checkAuthorizationAtUser
+        String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
+        User findByNicknameUser = userRepository.findByNickname(nickname).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
+        ifTrueThenThrow(!passwordEncoder.matches(findByNicknameUser.getPassword(),password), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
         return new UserFindByNicknameResponseDto(findByNicknameUser);
     }
 
     @Transactional
-    public UserUpdateResponseDto update(String updateUsername, String updateNickname, String updateEmail, String updatePassword, HttpServletRequest request) {
+    public UserUpdateResponseDto update(String updateUsername, String updateNickname, String updateEmail, String updatePassword, String oldPassword, HttpServletRequest request) {
 
-        User findByNicknameUser = getFindByNicknameUserOrElseThrow(request);
-
-        compareEqualsAndThrow(isEqualsToDB(updateUsername,updateNickname,updateEmail,updatePassword,findByNicknameUser), HttpStatus.BAD_REQUEST, "변경할 내용이 없습니다.");
+        // checkAuthorizationAtUser
+        String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
+        User findByNicknameUser = userRepository.findByNickname(nickname).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
+        ifTrueThenThrow(!passwordEncoder.matches(findByNicknameUser.getPassword(), oldPassword), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
         checkDuplicationsOfUniqueValue(updateNickname, updateEmail);
 
+        ifTrueThenThrow(isEqualsToDB(updateUsername,updateNickname,updateEmail,updatePassword,findByNicknameUser), HttpStatus.BAD_REQUEST, "변경할 내용이 없습니다.");
+
         String encodedPassword = passwordEncoder.encode(updatePassword);
-
         findByNicknameUser.updateInformation(updateUsername, updateNickname, updateEmail, encodedPassword);
-
         User updatedUser = userRepository.save(findByNicknameUser);
 
         initializedSession(request, updatedUser);
@@ -88,19 +89,18 @@ public class UserService implements CommonMethods {
     @Transactional
     public void withdrawal(String password, HttpServletRequest request) {
 
-        User findByNicknameUser = getFindByNicknameUserOrElseThrow(request);
-
-        compareEqualsAndThrow(passwordEncoder.matches(findByNicknameUser.getPassword(), password), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
-
-        request.getSession().invalidate();
+        // checkAuthorizationAtUser
+        String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
+        User findByNicknameUser = userRepository.findByNickname(nickname).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
+        ifTrueThenThrow(!passwordEncoder.matches(findByNicknameUser.getPassword(),password), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
         userRepository.delete(findByNicknameUser);
     }
 
 
     private void checkDuplicationsOfUniqueValue(String nickname, String email) {
-        compareEqualsAndThrow(userRepository.existsByNickname(nickname), HttpStatus.CONFLICT, "이미 사용중인 닉네임입니다.");
-        compareEqualsAndThrow(userRepository.existsByEmail(email), HttpStatus.CONFLICT, "이미 사용중인 이메일입니다.");
+        ifTrueThenThrow(userRepository.existsByNickname(nickname), HttpStatus.CONFLICT, "이미 사용중인 닉네임입니다.");
+        ifTrueThenThrow(userRepository.existsByEmail(email), HttpStatus.CONFLICT, "이미 사용중인 이메일입니다.");
     }
 
     private boolean isEqualsToDB(String updateUsername, String updateNickname, String updateEmail, String updatePassword, User findByNicknameUser) {
@@ -113,15 +113,6 @@ public class UserService implements CommonMethods {
     private void initializedSession(HttpServletRequest request, User user) {
         HttpSession session = request.getSession(true);
         session.setAttribute(Const.LOGIN_USER, user.getNickname());
-    }
-
-    private User getFindByNicknameUserOrElseThrow(HttpServletRequest request) {
-        String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
-        return userRepository.findByNickname(nickname).orElseThrow(UserNotFoundException::new);
-    }
-
-    private User getFindByEmailUserOrElseThrow(String email) {
-        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
 }

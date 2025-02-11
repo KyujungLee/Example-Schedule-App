@@ -13,13 +13,15 @@ public class ScheduleResponseDto {
     private final String contents;
     private final LocalDateTime created_at;
     private final LocalDateTime updated_at;
+    private final Long replyNumber;
 
     public ScheduleResponseDto(Schedule schedule) {
         this.nickname = schedule.getUser().getNickname();
         this.title = schedule.getTitle();
         this.contents = schedule.getContents();
-        this.created_at = schedule.getCreated_at();
+        this.created_at = schedule.getCreatedAt();
         this.updated_at = schedule.getUpdatedAt();
+        this.replyNumber = schedule.getReplyNumber();
     }
 
     public static ScheduleResponseDto toDtoSchedule(Schedule schedule){

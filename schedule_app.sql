@@ -1,6 +1,6 @@
 use schedule_app;
 
-CREATE TABLE `Schedule` (
+CREATE TABLE `schedule` (
     `id` bigint auto_increment primary key 	comment '고유값',
     `user_id` bigint not null comment '유저 고유 식별자',
     `title`	varchar(100) not null comment '할일 제목',
@@ -8,6 +8,8 @@ CREATE TABLE `Schedule` (
     `created_at` datetime comment '작성일',
     `updated_at` datetime comment '수정일'
 );
+
+alter table schedule add column reply_number bigint default 0;
 
 CREATE TABLE `user` (
     `id` bigint	auto_increment primary key comment '고유값',

@@ -22,12 +22,17 @@ public class UserUpdateRequestDto {
 
     @NotBlank(message = "비밀번호는 필수 입력 항목이며, 공백은 불가능합니다.")
     @Size(min = 8, max = 20, message = "비밀번호는 8자 이상, 20자 이하이어야 합니다")
-    private final String password;
+    private final String oldPassword;
 
-    public UserUpdateRequestDto(String username, String nickname, String email, String password) {
+    @NotBlank(message = "비밀번호는 필수 입력 항목이며, 공백은 불가능합니다.")
+    @Size(min = 8, max = 20, message = "비밀번호는 8자 이상, 20자 이하이어야 합니다")
+    private final String newPassword;
+
+    public UserUpdateRequestDto(String username, String nickname, String email, String oldPassword, String newPassword) {
         this.username = username;
         this.nickname = nickname;
         this.email = email;
-        this.password = password;
+        this.oldPassword = oldPassword;
+        this.newPassword = newPassword;
     }
 }

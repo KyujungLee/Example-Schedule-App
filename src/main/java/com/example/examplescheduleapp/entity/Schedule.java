@@ -2,8 +2,11 @@ package com.example.examplescheduleapp.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 
 import java.time.LocalDateTime;
+
 
 @Getter
 @Entity
@@ -23,6 +26,10 @@ public class Schedule extends BaseEntity{
 
     @Column(nullable = true)
     private String contents;
+
+    @Setter
+    @Column(name = "reply_number")
+    private Long replyNumber;
 
 
     public Schedule() {}
