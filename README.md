@@ -1,7 +1,7 @@
 # Example-Schedule-App
 
 ### 1. ERD 작성
-![](https://velog.velcdn.com/images/nmhjyu876/post/d2843c92-81a3-4821-9816-cf90c45f7ece/image.png)
+![Image](https://github.com/user-attachments/assets/0c665b14-b653-4c62-95a2-43ee5cba58e2)
 
 ### 2. SQL
 ```sql
