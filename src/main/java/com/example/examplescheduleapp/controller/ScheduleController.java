@@ -2,6 +2,7 @@ package com.example.examplescheduleapp.controller;
 
 import com.example.examplescheduleapp.dto.request.ScheduleSaveRequestDto;
 import com.example.examplescheduleapp.dto.request.ScheduleUpdateRequestDto;
+import com.example.examplescheduleapp.dto.response.PageResponseDto;
 import com.example.examplescheduleapp.dto.response.ScheduleResponseDto;
 import com.example.examplescheduleapp.service.ScheduleService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,16 +30,16 @@ public class ScheduleController {
         return new ResponseEntity<>(savedSchedule, HttpStatus.CREATED);
     }
 
-    @GetMapping
-    public ResponseEntity<Page<ScheduleResponseDto>> findAll(
+    @GetMapping("/guest")
+    public ResponseEntity<PageResponseDto<ScheduleResponseDto>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        Page<ScheduleResponseDto> findAllSchedule = scheduleService.findAll(page, size);
+        PageResponseDto<ScheduleResponseDto> findAllSchedule = scheduleService.findAll(page, size);
         return new ResponseEntity<>(findAllSchedule, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/guest")
     public ResponseEntity<ScheduleResponseDto> findById(
             @PathVariable Long id
     ){

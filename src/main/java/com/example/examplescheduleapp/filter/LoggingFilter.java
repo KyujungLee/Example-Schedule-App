@@ -27,6 +27,5 @@ public class LoggingFilter implements Filter {
 
         int status = httpResponse.getStatus();
         logger.info("[RESPONSE] {} {} - 응답 완료: {}", method, requestURI, status);
-
     }
 }

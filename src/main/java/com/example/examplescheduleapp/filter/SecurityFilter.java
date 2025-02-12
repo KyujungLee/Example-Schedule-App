@@ -30,6 +30,7 @@ public class SecurityFilter implements Filter {
             return;
         }
 
+        // 예외 발생시 명시적으로 가로채어, 톰캣이 오류를 감지하고 500 에러를 클라이언트에 응답하는 것을 방지
         try {
             HttpSession session = httpRequest.getSession(false);
 
@@ -41,6 +42,8 @@ public class SecurityFilter implements Filter {
             // 정상적으로 로그인된 사용자만 다음 필터 실행
             filterChain.doFilter(request, response);
 
+        // 예외 발생 시 예외를 가로채어 FilterErrorController 로 강제 포워딩
+        // 이후 ControllerAdvice(GlobalExceptionHandler) 가 가로채어 형식에 맞춘 예외 메시지 응답 가능
         } catch (ResponseStatusException e) {
             request.setAttribute("exception", e);
             request.getRequestDispatcher("/error/auth").forward(request, response);
@@ -48,7 +51,6 @@ public class SecurityFilter implements Filter {
             request.setAttribute("exception", e);
             request.getRequestDispatcher("/error/internal").forward(request, response);
         }
-
     }
 
     private boolean isPublicPath(String requestURI) {

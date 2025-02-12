@@ -1,7 +1,7 @@
 package com.example.examplescheduleapp.service;
 
 import com.example.examplescheduleapp.config.PasswordEncoder;
-import com.example.examplescheduleapp.dto.response.UserFindByNicknameResponseDto;
+import com.example.examplescheduleapp.dto.response.UserInformationResponseDto;
 import com.example.examplescheduleapp.dto.response.UserLoginResponseDto;
 import com.example.examplescheduleapp.dto.response.UserUpdateResponseDto;
 import com.example.examplescheduleapp.dto.response.UserSignUpResponseDto;
@@ -42,7 +42,7 @@ public class UserService implements CommonMethods {
     public UserLoginResponseDto login(String email, String password, HttpServletRequest request) {
 
         User loginUser = userRepository.findByEmail(email).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
-        ifTrueThenThrow(!passwordEncoder.matches(loginUser.getPassword(),password), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
+        ifTrueThenThrow(!passwordEncoder.matches(password, loginUser.getPassword()), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
         initializedSession(request, loginUser);
 
@@ -55,14 +55,12 @@ public class UserService implements CommonMethods {
     }
 
     @Transactional(readOnly = true)
-    public UserFindByNicknameResponseDto findInformation(String password, HttpServletRequest request) {
+    public UserInformationResponseDto findInformation(HttpServletRequest request) {
 
-        // checkAuthorizationAtUser
         String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
         User findByNicknameUser = userRepository.findByNickname(nickname).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
-        ifTrueThenThrow(!passwordEncoder.matches(findByNicknameUser.getPassword(),password), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
-        return new UserFindByNicknameResponseDto(findByNicknameUser);
+        return new UserInformationResponseDto(findByNicknameUser);
     }
 
     @Transactional
@@ -71,7 +69,7 @@ public class UserService implements CommonMethods {
         // checkAuthorizationAtUser
         String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
         User findByNicknameUser = userRepository.findByNickname(nickname).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
-        ifTrueThenThrow(!passwordEncoder.matches(findByNicknameUser.getPassword(), oldPassword), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
+        ifTrueThenThrow(!passwordEncoder.matches(oldPassword, findByNicknameUser.getPassword()), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
         checkDuplicationsOfUniqueValue(updateNickname, updateEmail);
 
@@ -92,9 +90,10 @@ public class UserService implements CommonMethods {
         // checkAuthorizationAtUser
         String nickname = request.getSession().getAttribute(Const.LOGIN_USER).toString();
         User findByNicknameUser = userRepository.findByNickname(nickname).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
-        ifTrueThenThrow(!passwordEncoder.matches(findByNicknameUser.getPassword(),password), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
+        ifTrueThenThrow(!passwordEncoder.matches(password, findByNicknameUser.getPassword()), HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
 
         userRepository.delete(findByNicknameUser);
+        request.getSession().invalidate();
     }
 
 

@@ -1,7 +1,9 @@
 package com.example.examplescheduleapp.controller;
 
 import com.example.examplescheduleapp.dto.request.ReplyRequestDto;
+import com.example.examplescheduleapp.dto.response.PageResponseDto;
 import com.example.examplescheduleapp.dto.response.ReplyResponseDto;
+import com.example.examplescheduleapp.dto.response.ScheduleResponseDto;
 import com.example.examplescheduleapp.service.ReplyService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +30,13 @@ public class ReplyController {
         return new ResponseEntity<>(savedReply, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{schedule_id}")
-    public ResponseEntity<Page<ReplyResponseDto>> findByScheduleId(
+    @GetMapping("/{schedule_id}/guest")
+    public ResponseEntity<PageResponseDto<ReplyResponseDto>> findByScheduleId(
             @PathVariable Long schedule_id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        Page<ReplyResponseDto> findByScheduleIdReply = replyService.findByScheduleId(schedule_id, page, size);
+        PageResponseDto<ReplyResponseDto> findByScheduleIdReply = replyService.findByScheduleId(schedule_id, page, size);
         return new ResponseEntity<>(findByScheduleIdReply, HttpStatus.OK);
     }
 

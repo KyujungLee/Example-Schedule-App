@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // Validation 오류
+    // Validation 예외
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException e) {
         logger.warn("[VALIDATION WARN] {}", e.getMessage());
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(e.getStatusCode().toString(), "입력 값이 잘못되었습니다.", errorDetails));
     }
 
-    // 일반적인 400번대 오류
+    // 일반적인 400번대 예외
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponseDto> handleResponseStatusException(ResponseStatusException e) {
         logger.warn("[WARN] {}", e.getMessage());

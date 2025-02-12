@@ -1,6 +1,7 @@
 package com.example.examplescheduleapp.service;
 
 import com.example.examplescheduleapp.config.Const;
+import com.example.examplescheduleapp.dto.response.PageResponseDto;
 import com.example.examplescheduleapp.dto.response.ScheduleResponseDto;
 import com.example.examplescheduleapp.entity.Schedule;
 import com.example.examplescheduleapp.entity.User;
@@ -38,11 +39,13 @@ public class ScheduleService implements CommonMethods{
     }
 
     @Transactional(readOnly = true)
-    public Page<ScheduleResponseDto> findAll(int page, int size){
+    public PageResponseDto<ScheduleResponseDto> findAll(int page, int size){
 
         if (size <= 0) { size = 10; }
         Pageable pageable = PageRequest.of(page, size);
-        return scheduleRepository.findAllByOrderByUpdatedAtDesc(pageable).map(ScheduleResponseDto::toDtoSchedule);
+        Page<ScheduleResponseDto> findAllSchedule = scheduleRepository.findAllByOrderByUpdatedAtDesc(pageable).map(ScheduleResponseDto::toDtoSchedule);
+
+        return new PageResponseDto<ScheduleResponseDto>(findAllSchedule);
     }
 
     @Transactional(readOnly = true)

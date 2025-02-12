@@ -1,7 +1,7 @@
 package com.example.examplescheduleapp.controller;
 
 import com.example.examplescheduleapp.dto.request.*;
-import com.example.examplescheduleapp.dto.response.UserFindByNicknameResponseDto;
+import com.example.examplescheduleapp.dto.response.UserInformationResponseDto;
 import com.example.examplescheduleapp.dto.response.UserLoginResponseDto;
 import com.example.examplescheduleapp.dto.response.UserSignUpResponseDto;
 import com.example.examplescheduleapp.dto.response.UserUpdateResponseDto;
@@ -46,12 +46,11 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PatchMapping
-    public ResponseEntity<UserFindByNicknameResponseDto> findInformation(
-            @Valid @RequestBody UserInformationRequestDto dto,
+    @GetMapping
+    public ResponseEntity<UserInformationResponseDto> findInformation(
             HttpServletRequest request
     ){
-        UserFindByNicknameResponseDto findByNicknameUser = userService.findInformation(dto.getPassword(), request);
+        UserInformationResponseDto findByNicknameUser = userService.findInformation(request);
         return new ResponseEntity<>(findByNicknameUser, HttpStatus.OK);
     }
 

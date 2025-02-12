@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class UserFindByNicknameResponseDto {
+public class UserInformationResponseDto {
 
     private final String username;
     private final String nickname;
@@ -14,11 +14,11 @@ public class UserFindByNicknameResponseDto {
     private final LocalDateTime created_at;
     private final LocalDateTime updated_at;
 
-    public UserFindByNicknameResponseDto(User user) {
+    public UserInformationResponseDto(User user) {
         this.username = user.getUsername();
         this.nickname = user.getNickname();
         this.email = user.getEmail();
-        this.created_at = user.getCreated_at();
+        this.created_at = user.getCreatedAt();
         this.updated_at = user.getUpdatedAt();
     }
 

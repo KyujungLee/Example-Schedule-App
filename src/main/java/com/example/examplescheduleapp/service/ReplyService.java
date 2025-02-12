@@ -1,6 +1,7 @@
 package com.example.examplescheduleapp.service;
 
 import com.example.examplescheduleapp.config.Const;
+import com.example.examplescheduleapp.dto.response.PageResponseDto;
 import com.example.examplescheduleapp.dto.response.ReplyResponseDto;
 import com.example.examplescheduleapp.entity.Reply;
 import com.example.examplescheduleapp.entity.Schedule;
@@ -45,11 +46,13 @@ public class ReplyService implements CommonMethods{
     }
 
     @Transactional(readOnly = true)
-    public Page<ReplyResponseDto> findByScheduleId(Long schedule_id, int page, int size) {
+    public PageResponseDto<ReplyResponseDto> findByScheduleId(Long schedule_id, int page, int size) {
 
         if (size <= 0) { size = 10; }
         Pageable pageable = PageRequest.of(page, size);
-        return replyRepository.findBySchedule_idOrderByUpdatedAtDesc(schedule_id, pageable).map(ReplyResponseDto::toDtoReply);
+        Page<ReplyResponseDto> findByScheduleIdReply = replyRepository.findBySchedule_idOrderByUpdatedAtDesc(schedule_id, pageable).map(ReplyResponseDto::toDtoReply);
+
+        return new PageResponseDto<ReplyResponseDto>(findByScheduleIdReply);
     }
 
     @Transactional
